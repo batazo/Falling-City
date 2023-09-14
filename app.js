@@ -209,27 +209,8 @@ function app() {
       buildingCreate();
    };
 
-   const init = () => {
-      // generate city
-      generateCity();
-      // setup scene
-      renderer.setClearColor(new THREE.Color(config.colors.sky));
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.shadowMap.enabled = true;
-
-      // lighting
-      scene.add(ambientLight);
-      hemiLight.position.set(0, 8, 0);
-      scene.add(hemiLight);
-
-      // camera
-      camera.position.set(0, 8, 0);
-
-      // fog
-      scene.fog = new THREE.Fog(config.colors.sky, 0.01, config.fogDistance);
-
-      // controls
-      controls = {
+   const controllGUIinit = () => {
+      const controls = {
          brightness: config.brightness,
          fogDistance: config.fogDistance,
          speed: config.speed,
@@ -270,6 +251,29 @@ function app() {
             renderer.setClearColor(new THREE.Color(color));
             scene.fog.color = new THREE.Color(color);
          });
+   };
+
+   const init = () => {
+      // generate city
+      generateCity();
+      // setup scene
+      renderer.setClearColor(new THREE.Color(config.colors.sky));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.shadowMap.enabled = true;
+
+      // lighting
+      scene.add(ambientLight);
+      hemiLight.position.set(0, 8, 0);
+      scene.add(hemiLight);
+
+      // camera
+      camera.position.set(0, 8, 0);
+
+      // fog
+      scene.fog = new THREE.Fog(config.colors.sky, 0.01, config.fogDistance);
+
+      // controls
+      controllGUIinit();
 
       // render
       document.body.appendChild(renderer.domElement);
