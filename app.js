@@ -18,7 +18,7 @@ function app() {
       // user adjustable
       brightness = 2,
       fogDistance = 720,
-      speed = 0.3,
+      speed = 0.7,
       // should stay as is
       bldgColor = 0x242424,
       lightColor = 0x444444,
