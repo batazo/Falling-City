@@ -4,7 +4,7 @@ window.addEventListener("DOMContentLoaded", app);
 function app() {
    const config = {
       brightness: 1,
-      fogDistance: 720,
+      fogDistance: 444,
       speed: 0.7,
       chunkSize: 128,
       chunksAtATime: 6,
