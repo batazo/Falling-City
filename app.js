@@ -30,7 +30,8 @@ function app() {
       renderer = new THREE.WebGLRenderer(),
       textureLoader = new THREE.TextureLoader(),
       ambientLight = new THREE.AmbientLight(config.colors.light),
-      hemiLight = new THREE.HemisphereLight(config.colors.lightColor, 0xffffff, config.brightness);
+      hemiLight = new THREE.HemisphereLight(config.colors.lightColor, 0xffffff, config.brightness),
+      audio = new Audio("https://bzozoo.github.io/Falling-City/assets/music/music.mp3");
 
    class Building {
       constructor({ x, y, z, width, height, depth, rotX = 0, rotY = 0, rotZ = 0 }) {
@@ -215,6 +216,7 @@ function app() {
          fogDistance: config.fogDistance,
          speed: config.speed,
          debrisPerChunk: config.debrisPerChunk,
+         music: false,
          skyColor: config.colors.sky,
       };
 
@@ -242,6 +244,15 @@ function app() {
             console.log("Debris");
             config.debrisPerChunk = controls.debrisPerChunk;
             debrisUpdate();
+         });
+      GUI.add(controls, "music", 0)
+         .name("Music")
+         .onChange((e) => {
+            if (e) {
+               audio.play();
+            } else {
+               audio.pause();
+            }
          });
       GUI.addColor(controls, "skyColor")
          .name("Sky Color")
