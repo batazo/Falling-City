@@ -3,7 +3,7 @@ window.addEventListener("DOMContentLoaded", app);
 
 function app() {
    const config = {
-      brightness: 1,
+      brightness: 0.62,
       fogDistance: 444,
       speed: 0.7,
       chunkSize: 128,
