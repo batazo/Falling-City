@@ -8,7 +8,7 @@ function app() {
       speed: 0.7,
       chunkSize: 128,
       chunksAtATime: 6,
-      debrisPerChunk: 32,
+      debrisPerChunk: 150,
       debrisMaxChunkAscend: 2,
       smBldgSize: 10,
       lgBldgSize: 12,
@@ -33,7 +33,7 @@ function app() {
       hemiLight = new THREE.HemisphereLight(config.colors.lightColor, 0xffffff, config.brightness);
 
    class Building {
-      constructor(x, y, z, width, height, depth, rotX = 0, rotY = 0, rotZ = 0) {
+      constructor({ x, y, z, width, height, depth, rotX = 0, rotY = 0, rotZ = 0 }) {
          this.geo = new THREE.BoxGeometry(width, height, depth);
          this.mat = new THREE.MeshLambertMaterial({
             color: config.colors.bldg,
@@ -57,12 +57,13 @@ function app() {
             this.mesh.rotation.z = (rotZ * Math.PI) / 180;
          }
          this.mesh.castShadow = true;
+
          scene.add(this.mesh);
       }
    }
 
    class Debris {
-      constructor(x, y, z, width, height, depth, rotX = 0, rotY = 0, rotZ = 0) {
+      constructor({ x, y, z, width, height, depth, rotX = 0, rotY = 0, rotZ = 0 }) {
          this.geo = new THREE.BoxGeometry(width, height, depth);
          this.mat = new THREE.MeshLambertMaterial({
             color: config.colors.bldg,
@@ -82,12 +83,73 @@ function app() {
       return Math.floor(Math.random() * 360);
    };
 
-   const init = () => {
-      // setup scene
-      renderer.setClearColor(new THREE.Color(config.colors.sky));
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.shadowMap.enabled = true;
+   const debrisRemove = () => {
+      for (let d of store.debris) {
+         scene.remove(d.mesh);
+      }
+      store.debris = [];
+   };
 
+   const groundCreate = () => {
+      for (let cz = 1; cz > -config.chunksAtATime; --cz) {
+         const zMove = config.chunkSize * cz;
+         const groundGeo = new THREE.PlaneGeometry(config.chunkSize, config.chunkSize);
+         const groundMat = new THREE.MeshLambertMaterial({
+            color: 0x969696,
+            map: textureLoader.load("https://bzozoo.github.io/Falling-City/assets/img/asphalt.jpg"),
+         });
+
+         const ground = new THREE.Mesh(groundGeo, groundMat);
+         ground.rotation.x = -0.5 * Math.PI;
+         ground.position.set(0, 0, zMove);
+         ground.receiveShadow = true;
+         scene.add(ground);
+      }
+   };
+
+   const buildingCreate = () => {
+      for (let cz = 1; cz > -config.chunksAtATime; --cz) {
+         const zMove = config.chunkSize * cz;
+         // buildings
+         store.buildings.push(
+            // northwest
+            new Building({ x: -44, y: 4, z: -44 + zMove, width: config.lgBldgSize, height: 40, depth: config.lgBldgSize, rotX: 0, rotY: 35, rotZ: -85 }),
+            new Building({ x: -56, y: -2, z: -32 + zMove, width: config.smBldgSize, height: 52, depth: config.smBldgSize, rotX: 15, rotY: 0, rotZ: -12 }),
+            new Building({ x: -36, y: 0, z: -16 + zMove, width: config.lgBldgSize, height: 52, depth: config.lgBldgSize, rotX: 0, rotY: 0, rotZ: -10 }),
+            new Building({ x: -24, y: 0, z: -36 + zMove, width: config.smBldgSize, height: 52, depth: config.smBldgSize, rotX: 0, rotY: 0, rotZ: -10 }),
+            new Building({ x: -16, y: 0, z: -20 + zMove, width: config.smBldgSize, height: 52, depth: config.smBldgSize, rotX: 30, rotY: 0, rotZ: 0 }),
+
+            // northeast
+            new Building({ x: 24, y: -2, z: -44 + zMove, width: config.lgBldgSize, height: 44, depth: config.lgBldgSize, rotX: -15, rotY: 0, rotZ: 15 }),
+            new Building({ x: 40, y: 0, z: -36 + zMove, width: config.smBldgSize, height: 48, depth: config.smBldgSize, rotX: 0, rotY: 0, rotZ: 15 }),
+            new Building({ x: 48, y: 0, z: -36 + zMove, width: config.smBldgSize, height: 38, depth: config.smBldgSize, rotX: 0, rotY: 0, rotZ: 12 }),
+            new Building({ x: 20, y: 0, z: -24 + zMove, width: config.smBldgSize, height: 40, depth: config.smBldgSize, rotX: 0, rotY: 0, rotZ: 15 }),
+            new Building({ x: 32, y: 0, z: -24 + zMove, width: config.smBldgSize, height: 48, depth: config.smBldgSize, rotX: 0, rotY: 0, rotZ: 15 }),
+            new Building({ x: 42, y: 0, z: -24 + zMove, width: config.smBldgSize, height: 38, depth: config.smBldgSize, rotX: 0, rotY: 0, rotZ: 15 }),
+            new Building({ x: 48, y: 2, z: 1 + zMove, width: config.lgBldgSize, height: 32, depth: config.lgBldgSize, rotX: 0, rotY: -25, rotZ: 80 }),
+
+            // southwest
+            new Building({ x: -48, y: 0, z: 16 + zMove, width: config.smBldgSize, height: 44, depth: config.smBldgSize, rotX: 0, rotY: 0, rotZ: -10 }),
+            new Building({ x: -32, y: 0, z: 16 + zMove, width: config.smBldgSize, height: 48, depth: config.smBldgSize, rotX: 0, rotY: 0, rotZ: -15 }),
+            new Building({ x: -16, y: -2, z: 16 + zMove, width: config.smBldgSize, height: 40, depth: config.smBldgSize, rotX: -10, rotY: 0, rotZ: -12 }),
+            new Building({ x: -32, y: 0, z: 32 + zMove, width: config.lgBldgSize, height: 48, depth: config.lgBldgSize, rotX: 0, rotY: 0, rotZ: 15 }),
+            new Building({ x: -48, y: 0, z: 48 + zMove, width: config.smBldgSize, height: 20, depth: config.smBldgSize }),
+            new Building({ x: -16, y: 0, z: 48 + zMove, width: config.smBldgSize, height: 36, depth: config.smBldgSize, rotX: 0, rotY: 0, rotZ: 15 }),
+            new Building({ x: -48, y: 19, z: 48 + zMove, width: config.smBldgSize, height: 20, depth: config.smBldgSize, rotX: 0, rotY: 0, rotZ: -15 }),
+
+            // southeast
+            new Building({ x: 30, y: 0, z: 52 + zMove, width: config.lgBldgSize, height: 48, depth: config.lgBldgSize, rotX: 0, rotY: 0, rotZ: 20 }),
+            new Building({ x: 24, y: 0, z: 20 + zMove, width: config.smBldgSize, height: 40, depth: config.smBldgSize, rotX: 0, rotY: 0, rotZ: 5 }),
+            new Building({ x: 40, y: 0, z: 24 + zMove, width: config.smBldgSize, height: 40, depth: config.smBldgSize }),
+            new Building({ x: 24, y: 0, z: 32 + zMove, width: config.smBldgSize, height: 36, depth: config.smBldgSize }),
+            new Building({ x: 52, y: 0, z: 12 + zMove, width: config.smBldgSize, height: 20, depth: config.smBldgSize }),
+            new Building({ x: 36, y: 0, z: 32 + zMove, width: config.lgBldgSize, height: 48, depth: config.lgBldgSize, rotX: 0, rotY: 0, rotZ: -25 })
+         );
+      }
+   };
+
+   const debrisIdealSetCreate = () => {
+      store.debrisIdealSet = [];
       // use randomized and fixed configuration of debris particles that can be repeated
       for (let d = 0; d < config.debrisPerChunk; ++d) {
          let halfChunk = config.chunkSize / 2,
@@ -113,63 +175,47 @@ function app() {
             rotZ: randomAngle(),
          });
       }
+   };
 
-      // generate city
+   const debrisCreate = () => {
+      debrisRemove();
       for (let cz = 1; cz > -config.chunksAtATime; --cz) {
          const zMove = config.chunkSize * cz;
-
-         // surface
-         const groundGeo = new THREE.PlaneGeometry(config.chunkSize, config.chunkSize);
-         const groundMat = new THREE.MeshLambertMaterial({
-            color: 0x969696,
-            map: textureLoader.load("https://bzozoo.github.io/Falling-City/assets/img/asphalt.jpg"),
-         });
-
-         const ground = new THREE.Mesh(groundGeo, groundMat);
-         ground.rotation.x = -0.5 * Math.PI;
-         ground.position.set(0, 0, zMove);
-         ground.receiveShadow = true;
-         scene.add(ground);
-
-         // buildings
-         store.buildings.push(
-            // northwest
-            new Building(-44, 4, -44 + zMove, config.lgBldgSize, 40, config.lgBldgSize, 0, 35, -85),
-            new Building(-56, -2, -32 + zMove, config.smBldgSize, 52, config.smBldgSize, 15, 0, -12),
-            new Building(-36, 0, -16 + zMove, config.lgBldgSize, 52, config.lgBldgSize, 0, 0, -10),
-            new Building(-24, 0, -36 + zMove, config.smBldgSize, 52, config.smBldgSize, 0, 0, -10),
-            new Building(-16, 0, -20 + zMove, config.smBldgSize, 52, config.smBldgSize, 30, 0, 0),
-
-            // northeast
-            new Building(24, -2, -44 + zMove, config.lgBldgSize, 44, config.lgBldgSize, -15, 0, 15),
-            new Building(40, 0, -36 + zMove, config.smBldgSize, 48, config.smBldgSize, 0, 0, 15),
-            new Building(48, 0, -36 + zMove, config.smBldgSize, 38, config.smBldgSize, 0, 0, 12),
-            new Building(20, 0, -24 + zMove, config.smBldgSize, 40, config.smBldgSize, 0, 0, 15),
-            new Building(32, 0, -24 + zMove, config.smBldgSize, 48, config.smBldgSize, 0, 0, 15),
-            new Building(42, 0, -24 + zMove, config.smBldgSize, 38, config.smBldgSize, 0, 0, 15),
-            new Building(48, 2, 1 + zMove, config.lgBldgSize, 32, config.lgBldgSize, 0, -25, 80),
-
-            // southwest
-            new Building(-48, 0, 16 + zMove, config.smBldgSize, 44, config.smBldgSize, 0, 0, -10),
-            new Building(-32, 0, 16 + zMove, config.smBldgSize, 48, config.smBldgSize, 0, 0, -15),
-            new Building(-16, -2, 16 + zMove, config.smBldgSize, 40, config.smBldgSize, -10, 0, -12),
-            new Building(-32, 0, 32 + zMove, config.lgBldgSize, 48, config.lgBldgSize, 0, 0, 15),
-            new Building(-48, 0, 48 + zMove, config.smBldgSize, 20, config.smBldgSize),
-            new Building(-16, 0, 48 + zMove, config.smBldgSize, 36, config.smBldgSize, 0, 0, 15),
-            new Building(-48, 19, 48 + zMove, config.smBldgSize, 20, config.smBldgSize, 0, 0, -15),
-
-            // southeast
-            new Building(30, 0, 52 + zMove, config.lgBldgSize, 48, config.lgBldgSize, 0, 0, 20),
-            new Building(24, 0, 20 + zMove, config.smBldgSize, 40, config.smBldgSize, 0, 0, 5),
-            new Building(40, 0, 24 + zMove, config.smBldgSize, 40, config.smBldgSize),
-            new Building(24, 0, 32 + zMove, config.smBldgSize, 36, config.smBldgSize),
-            new Building(52, 0, 12 + zMove, config.smBldgSize, 20, config.smBldgSize),
-            new Building(36, 0, 32 + zMove, config.lgBldgSize, 48, config.lgBldgSize, 0, 0, -25)
-         );
-
-         // debris particles
-         for (let fs of store.debrisIdealSet) store.debris.push(new Debris(fs.x, fs.y, fs.z + zMove, fs.width, fs.height, fs.depth, fs.rotX, fs.rotY, fs.rotZ));
+         for (let fs of store.debrisIdealSet)
+            store.debris.push(
+               new Debris({
+                  x: fs.x,
+                  y: fs.y,
+                  z: fs.z + zMove,
+                  width: fs.width,
+                  height: fs.height,
+                  depth: fs.depth,
+                  rotX: fs.rotX,
+                  rotY: fs.rotY,
+                  rotZ: fs.rotZ,
+               })
+            );
       }
+   };
+
+   const debrisUpdate = () => {
+      debrisIdealSetCreate();
+      debrisCreate();
+   };
+
+   const generateCity = () => {
+      debrisUpdate();
+      groundCreate();
+      buildingCreate();
+   };
+
+   const init = () => {
+      // generate city
+      generateCity();
+      // setup scene
+      renderer.setClearColor(new THREE.Color(config.colors.sky));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.shadowMap.enabled = true;
 
       // lighting
       scene.add(ambientLight);
@@ -212,7 +258,9 @@ function app() {
       GUI.add(controls, "debrisPerChunk", 0, 300, 0.01)
          .name("Debris Per Chunk")
          .onChange((e) => {
+            console.log("Debris");
             config.debrisPerChunk = controls.debrisPerChunk;
+            debrisUpdate();
          });
       GUI.addColor(controls, "skyColor")
          .name("Sky Color")
