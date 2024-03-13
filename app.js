@@ -31,14 +31,14 @@ function app() {
       textureLoader = new THREE.TextureLoader(),
       ambientLight = new THREE.AmbientLight(config.colors.light),
       hemiLight = new THREE.HemisphereLight(config.colors.lightColor, 0xffffff, config.brightness),
-      audio = new Audio("https://bzozoo.github.io/Falling-City/assets/music/music.mp3");
+      audio = new Audio("https://batazo.github.io/Falling-City/assets/music/music.mp3");
 
    class Building {
       constructor({ x, y, z, width, height, depth, rotX = 0, rotY = 0, rotZ = 0 }) {
          this.geo = new THREE.BoxGeometry(width, height, depth);
          this.mat = new THREE.MeshLambertMaterial({
             color: config.colors.bldg,
-            map: textureLoader.load("https://bzozoo.github.io/Falling-City/assets/img/building.jpg"),
+            map: textureLoader.load("https://batazo.github.io/Falling-City/assets/img/building.jpg"),
          });
 
          this.mat.map.wrapS = THREE.RepeatWrapping;
@@ -46,7 +46,7 @@ function app() {
          this.mat.map.repeat.set(1, height / width > 2 ? 3 : 2);
 
          const halfHeight = height / 2,
-            isRotated = rotX != 0 || rotY != 0 || rotZ != 0;
+            isRotated = rotX != 0 || rotY !=F 0 || rotZ != 0;
 
          this.mesh = new THREE.Mesh(this.geo, this.mat);
          this.mesh.position.set(x, isRotated ? y : y + halfHeight, z);
