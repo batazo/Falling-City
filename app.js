@@ -46,7 +46,7 @@ function app() {
          this.mat.map.repeat.set(1, height / width > 2 ? 3 : 2);
 
          const halfHeight = height / 2,
-            isRotated = rotX != 0 || rotY !=F 0 || rotZ != 0;
+            isRotated = rotX != 0 || rotY != 0 || rotZ != 0;
 
          this.mesh = new THREE.Mesh(this.geo, this.mat);
          this.mesh.position.set(x, isRotated ? y : y + halfHeight, z);
